@@ -14,7 +14,7 @@ The code in the CUT-RUN repository is intended to be run on HPC clusters, such a
 	- [Removing conda environments](#removing-conda-environments)
 	- [Creating your own conda environment](#creating-your-own-conda-environment)
 	- [Adding/removing packages in conda](#installing-packages-to-your-conda-environment)
-- [Code run on login: .bashrc](#code-run-on-login-.bashrc)
+- [Code run on login: .bashrc](#code-run-on-login-bashrc)
 	- [Auto-starting conda](#auto-starting-conda)
 	- [Setting environment variables](#setting-environment-variables)
 	- [Loading modules](#loading-modules)
@@ -35,42 +35,72 @@ Double click on the shell session; you will see a login prompt on the terminal. 
 
 ### Logging in to Riviera from the command line
 To log into Riviera without a tool like MobaXterm, run the following command from the command line, replacing `username` with your username:
-`ssh username@riviera.colostate.edu`
+``` bash
+ssh username@riviera.colostate.edu
+```
 
 You will be prompted for your password. It will not show up as you type, so type carefully.
 
 ### Transferring files without MobaXterm
 If you cannot use MobaXterm or another GUI-based SSH tool, you can upload and download files with the `scp` command. Here is a template for uploading files to Riviera from a MacOS or Linux machine. Because it uses the `-r` flag, it can be used to copy individual files or directories. Wildcards (`*`) are allowed, but can occasionally cause issues. The tilde `~` is used to denote the home directory, but you can use an absolute path by starting with a `/` if needed. Replace the paths and USERNAME with the correct values.
-- `scp -r path/to/file/or/directory USERNAME@riviera.colostate.edu:~/path/to/destination`
+``` bash
+scp -r path/to/file/or/directory USERNAME@riviera.colostate.edu:~/path/to/destination
+```
 
 Here is a similar template for downloading files from Riviera:
-- `scp -r USERNAME@riviera.colostate.edu:~/path/to/file/or/directory path/to/destination`
+``` bash
+scp -r USERNAME@riviera.colostate.edu:~/path/to/file/or/directory path/to/destination
+```
 
 If you have directories or files with spaces in their names (which should generally be avoided), then try wrapping the paths in quotes like so:
-- `scp -r "path/to/file or directory" USERNAME@riviera.colostate.edu:"~/path/to your/destination"`
+``` bash
+scp -r "path/to/file or directory" USERNAME@riviera.colostate.edu:"~/path/to your/destination"
+```
 
 ### Transferring files "directly" between the NAS and Riviera
 Sometimes it is inconvenient to transfer files through your own computer. (this is what happens when you drag files directly from the NAS to a window of MobaXterm)  It can be useful to set up an asynchronous process that handles these file transfers. This tends to be faster, and it allows you to transfer files without keeping your computer on. This requires access to the AIDLNGS01 server, or any other server that has a *mounted* NAS drive. The following command, which should be run on Riviera, uses the AIDLNGS01 server to transfer files from the NAS to Riviera:
-- ```sshpass -p "YourAIDLNGS01Password" scp -r AidlngsUsername@AIDLNGS01.cvmbs.colostate.edu:/home/lab_data/rosenberg_lab/NAS_DIRECTORY/path/to/files path/to/destination```
+
+``` bash
+sshpass -p "YourAIDLNGS01Password" scp -r AidlngsUsername@AIDLNGS01.cvmbs.colostate.edu:/home/lab_data/rosenberg_lab/NAS_DIRECTORY/path/to/files path/to/destination
+```
 
 There are Slurm versions of this command saved on the NAS in `NAS_Server_Shared/shared_scripts/ZM_custom`. I would suggest putting them in your home directory on Riviera, so that you can call them with `sbatch ~/transfer_from_async.sh` or `sbatch ~/transfer_to_async.sh` (the `~` refers to your home directory)
 
 ## Downloading the CUT-RUN GitHub files
 We will use `git` to download the CUT&RUN pipeline files straight from the GitHub. Riviera has a module for `git` that can be easily loaded with the command `module load git`. After this, `cd` into the directory where you want to install the CUT&RUN pipeline, then run the following command:
-- ```git clone https://github.com/CRosenbergCode/CUT-RUN.git```
+``` bash
+git clone https://github.com/CRosenbergCode/CUT-RUN.git
+```
 
 ## Setting up Conda (miniconda3)
 Conda is a package and environment manager, allowing you to switch between different "environments" that have different programs installed. This is useful when your programs may conflict with one another.
 
 We are following the instructions listed on https://www.anaconda.com/docs/getting-started/miniconda/install#macos-linux-installation.
 
-1. Make sure you're in your home directory: `cd ~`
-2. Download miniconda3 installation script: `wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh`
-3. Run the installation script: `bash ~/Miniconda3-latest-Linux-x86_64.sh`
+``` bash
+# 1. Make sure you're in your home directory
+cd ~
+# 2. Download miniconda3 installation script
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# 3. Run the installation script
+bash ~/Miniconda3-latest-Linux-x86_64.sh
+```
 4. Scroll through Anaconda's TOS with the Return key, then enter `yes` when prompted to agree to the TOS.
-5. Press Return to use the default installation directory (`~/miniconda3`)
-6. Enter `yes` to use auto-initialization. (you can change this later in the [.bashrc section](#code-run-on-login-.bashrc).
-7. The first time you do this, conda will not auto-initialize. You can make it initialize by re-running your `.bashrc` script like so: `source ~/.bashrc`
+5. Press <Return> to use the default installation directory (~/miniconda3)
+6. Enter `yes` to use auto-initialization. (you can change this later in the [.bashrc section](#code-run-on-login-bashrc)).
+7. The first time you do this, conda will not auto-initialize. You can make it initialize by re-running your .bashrc script:
+``` bash
+source ~/.bashrc
+```
+8. Finally, you have to configure conda, mainly for installing packages correctly.
+``` bash
+# Adding a common conda channel, conda-forge.
+conda config --add channels conda-forge
+# Recommended package
+conda-forge install tree
+# If a package exists in other channels, we want to install it from there instead of from Bioconda
+conda config --append channels bioconda
+```
 
 ### Using conda
 The main conda commands you will use are `conda activate` and `conda deactivate`.
@@ -81,19 +111,23 @@ Once conda is running, you can change into a new environment by using `conda act
 
 ### Creating the CUT-RUN conda environments
 All the necessary conda environments have already been created as .yml files in the CUT-RUN files. Go to `CUT-RUN-main/CondaEnvs/` and run the following command for each .yml file you need to create an environment from. You will then be prompted to provide permission to install different packages, respond with `y`.
-- `conda env create --file YourCondaEnv.yml`
+``` bash
+conda env create --file YourCondaEnv.yml
+```
 
 ### Removing conda environments
 If you have made a mistake and need to remove a conda environment, run `conda env list` to ensure you have the right name, then delete the environment by name using `conda remove -n YourEnvironmentName --all`. **MAKE SURE YOU HAVE THE ENVIRONMENT DEACTIVATED BEFORE REMOVING IT.**
 
 ### Creating your own conda environment
 There are many options for creating conda environments. If you are at the point at which you're creating your own conda environments, you are probably comfortable reading the [conda docs page on managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html). Otherwise, the most basic way to create an environment is using the following command.
-- `conda create --name MyEnvironmentName`
+``` bash
+conda create --name MyEnvironmentName
+```
 
 You can then activate this environment with `conda activate MyEnvironmentName`
 
 ### Installing packages to your conda environment
-Conda packages can be installed with the command `conda install`. To find out the exact name of a package, you should always search it up. For example, let's install the `rmats` package to our current environment:
+Conda packages can be installed with the command `conda install`. To find out the exact name of a package, you should always search it up. For example, let's walk through installing the `rmats` package to our current environment:
 1. First, find the rmats package online. Search "conda rmats". This brings up a bioconda page that shows up the correct command to install rmats: `conda install bioconda::rmats` (Notice that it is part of the `bioconda` channel. You will often install packages from here)
 2. On Riviera, ensure you are in the environment you want to install packages in. Check the [Using conda](#using-conda) instructions above. In this case, let's say we are in the "MyEnv" environment: `conda activate MyEnv`
 3. Install the `rmats` package: `conda install bioconda::rmats`
@@ -111,20 +145,25 @@ Hidden files and directories are preceded by a dot. The `.bashrc` file is a hidd
 To edit your .bashrc file, run the following command: `nano ~/.bashrc`
 You will enter a command line-based text editor called nano. When you are finished making edits, type Ctrl+X and then enter `Y` to save your edits, or `N` to not.
 
+<img src="https://i.imgur.com/Y3cDw16.png" width="500"/>
+
+*This user has a .bashrc script that draws a picture on login*
+
+
 ### Auto-starting conda
 If you previously did not opt to auto-start conda on log-in, you will need to add the code for it to your .bashrc. Copy and paste the following code into your .bashrc, replacing `zmikol` with your own Riviera username. If you would like to turn off auto-initialization, delete this code from your .bashrc.
-```
+``` bash
 # >>> conda initialize >>>  
 # !! Contents within this block are managed by 'conda init' !!  
 __conda_setup="$('/nfs/home/zmikol/miniconda3/bin/conda'  'shell.bash'  'hook'  2> /dev/null)"  
 if [  $?  -eq  0  ];  then  
-eval  "$__conda_setup"  
+	eval  "$__conda_setup"  
 else  
-if [  -f  "/nfs/home/zmikol/miniconda3/etc/profile.d/conda.sh"  ];  then  
-. "/nfs/home/zmikol/miniconda3/etc/profile.d/conda.sh"  
-else  
-export PATH="/nfs/home/zmikol/miniconda3/bin:$PATH"  
-fi  
+	if [  -f  "/nfs/home/zmikol/miniconda3/etc/profile.d/conda.sh"  ];  then  
+		. "/nfs/home/zmikol/miniconda3/etc/profile.d/conda.sh"  
+	else  
+		export PATH="/nfs/home/zmikol/miniconda3/bin:$PATH"  
+	fi  
 fi  
 unset __conda_setup  
 # <<< conda initialize <<<
@@ -137,19 +176,23 @@ To set an environment variable on startup, use the following code:
 The most helpful environment variable to set on Riviera is the TMPDIR variable. Many programs will default to using Riviera's `/tmp` directory, which has a disappointing 2 gigabytes of allocated space. You should create your own temp directory. You can name it anything you like, but the following is suggested: `mkdir ~/.temp` (this creates a "hidden" directory in your home folder)
 
 Then, you can add the following code to your .bashrc, replacing `zmikol` with your own Riviera username.
-- `export TMPDIR="/nfs/home/zmikol/.temp"`
+``` bash
+export TMPDIR="/nfs/home/zmikol/.temp"
+```
 
 If your temp directory has a different name or is elsewhere, `cd` into it, then copy the output of the `pwd` command, and set that as the value of your TMPDIR variable in .bashrc.
 
 ### Loading modules
 Certain tools on Riviera must be loaded as modules, with the most important one being Slurm. To load a module, you can use the `module load module_name` command. (where module_name is the name of your module) Add the following code to your .bashrc:
-- `module load slurm`
+``` bash
+module load slurm
+```
 
 You can check out the other available modules by running `module spider`, and you can search for specific modules, such as CUDA, like so: `module spider cuda`. Use the up/down arrow keys to navigate, and `q` to quit.
 
 ### Creating custom commands
 This section is optional, but can help create shortcuts that save time. You can create a custom command in bash using the following pattern:
-```
+``` bash
 function myfunction() {
 	# code goes here
 }
@@ -158,7 +201,7 @@ function myfunction() {
 By putting custom commands in your .bashrc, you can call them from the command line simply by entering their name. In this case, we would be able to run the `myfunction` command, although it wouldn't do anything, since we haven't added any code inside it.
 
 Some custom commands may just be shortcuts to calling other scripts. For example, the [asynchronous file transfer scripts](#transferring-files-directly-between-the-nas-and-riviera) above could be turned into easy commands like so. `$1` and `$2` refer to the first and second arguments sent to the command.
-```
+``` bash
 function getnas() {
 	sbatch ~/transfer_from_async.sh $1 $2
 }
@@ -168,10 +211,10 @@ function sendnas() {
 }
 ```
 
-Another useful command is a quick slurm job scheduler for running big jobs that don't have their own Slurm script. (For example, copying or unzipping a 300GB directory)   This requires you to add the `salias_helper.sh` script (located in `NAS_Server_Shared/shared_scripts/ZM_custom`) to your home directory first, and rename it to `.salias_helper.sh` (so it is hidden and out of the way)
-```
+Another useful command is a quick slurm job scheduler for running big jobs that don't have their own Slurm script. (For example, copying or unzipping a 300GB directory)   This requires you to add the `salias_helper.sh` script (located in `NAS_Server_Shared/shared_scripts/ZM_custom`) to your home directory first, and rename it to `.salias_helper.sh` (adding a period at the start so it's out of sight)
+``` bash
 function salias() {
-	sbatch ~/.salias_helper.sh "$@"
+	sbatch ~/.salias_helper.sh $@
 }
 ```
 Then, you can run your big commands, like unzipping a massive file, as slurm jobs like so: `salias unzip my_massive_file.zip`
