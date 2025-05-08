@@ -67,8 +67,12 @@ sshpass -p "YourAIDLNGS01Password" scp -r AidlngsUsername@AIDLNGS01.cvmbs.colost
 There are Slurm versions of this command saved on the NAS in `NAS_Server_Shared/shared_scripts/ZM_custom`. I would suggest putting them in your home directory on Riviera, so that you can call them with `sbatch ~/transfer_from_async.sh` or `sbatch ~/transfer_to_async.sh` (the `~` refers to your home directory)
 
 ## Downloading the CUT-RUN GitHub files
-We will use `git` to download the CUT&RUN pipeline files straight from the GitHub. Riviera has a module for `git` that can be easily loaded with the command `module load git`. After this, `cd` into the directory where you want to install the CUT&RUN pipeline, then run the following command:
-``` bash
+We will use `git` to download the CUT&RUN pipeline files straight from the GitHub.
+1. `cd` into the directory where you want to install the CUT&RUN pipeline.
+```bash
+# 2. Load the git module
+module load git
+# 3. Clone the CUT-RUN github into your current directory
 git clone https://github.com/CRosenbergCode/CUT-RUN.git
 ```
 
@@ -86,8 +90,8 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash ~/Miniconda3-latest-Linux-x86_64.sh
 ```
 4. Scroll through Anaconda's TOS with the Return key, then enter `yes` when prompted to agree to the TOS.
-5. Press <Return> to use the default installation directory (~/miniconda3)
-6. Enter `yes` to use auto-initialization. (you can change this later in the [.bashrc section](#code-run-on-login-bashrc)).
+5. Press Return to use the default installation directory (`~/miniconda3`)
+6. Enter `yes` to enable auto-initialization. (you can change this later in the [.bashrc section](#code-run-on-login-bashrc)).
 7. The first time you do this, conda will not auto-initialize. You can make it initialize by re-running your .bashrc script:
 ``` bash
 source ~/.bashrc
@@ -96,18 +100,21 @@ source ~/.bashrc
 ``` bash
 # Adding a common conda channel, conda-forge.
 conda config --add channels conda-forge
-# Recommended package
-conda-forge install tree
 # If a package exists in other channels, we want to install it from there instead of from Bioconda
 conda config --append channels bioconda
+# Recommended package
+conda-forge install tree
 ```
 
 ### Using conda
 The main conda commands you will use are `conda activate` and `conda deactivate`.
 
-When you need to switch into a conda environment, first check that you're in the base environment by looking to the left of your username in the terminal. It should say `(base)`. If it says something else, you must run the command `conda deactivate`. If there is nothing in parenthesis to the left of your name, conda is not running, and you must start it with the command `conda activate`.
+1. When you need to switch into a conda environment, first check that you're in the base environment by looking to the left of your username in the terminal. It should say `(base)`. If it says something else, you must run the command `conda deactivate`. If there is nothing in the parentheses to the left of your name, then conda is not running, and you must start it with the command `conda activate`.
 
-Once conda is running, you can change into a new environment by using `conda activate EnvironmentName`, replacing "EnvironmentName" with the proper name of your environment. If you are unsure what its name is, run `conda env list` to see a list of available environments.
+2. Once conda is running, you can change into a new environment by using `conda activate EnvironmentName`, replacing "EnvironmentName" with the proper name of your environment. If you are unsure what its name is, run `conda env list` to see a list of available environments.
+```bash
+conda activate EnvironmentName
+```
 
 ### Creating the CUT-RUN conda environments
 All the necessary conda environments have already been created as .yml files in the CUT-RUN files. Go to `CUT-RUN-main/CondaEnvs/` and run the following command for each .yml file you need to create an environment from. You will then be prompted to provide permission to install different packages, respond with `y`.
@@ -116,7 +123,15 @@ conda env create --file YourCondaEnv.yml
 ```
 
 ### Removing conda environments
-If you have made a mistake and need to remove a conda environment, run `conda env list` to ensure you have the right name, then delete the environment by name using `conda remove -n YourEnvironmentName --all`. **MAKE SURE YOU HAVE THE ENVIRONMENT DEACTIVATED BEFORE REMOVING IT.**
+If you have made a mistake and need to remove a conda environment, run `conda env list` to ensure you have the right name, then delete the environment by name with the following command.. **MAKE SURE YOU HAVE THE ENVIRONMENT DEACTIVATED BEFORE REMOVING IT.**
+``` bash
+# 1. Check that you have the right environment name
+conda env list
+```
+``` bash
+# 2. Remove the environment
+conda remove -n YourEnvironmentName --all
+```
 
 ### Creating your own conda environment
 There are many options for creating conda environments. If you are at the point at which you're creating your own conda environments, you are probably comfortable reading the [conda docs page on managing environments](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html). Otherwise, the most basic way to create an environment is using the following command.
@@ -124,25 +139,44 @@ There are many options for creating conda environments. If you are at the point 
 conda create --name MyEnvironmentName
 ```
 
-You can then activate this environment with `conda activate MyEnvironmentName`
+You can then activate this environment with the following conda command:
+``` bash
+conda activate MyEnvironmentName
+```
 
 ### Installing packages to your conda environment
 Conda packages can be installed with the command `conda install`. To find out the exact name of a package, you should always search it up. For example, let's walk through installing the `rmats` package to our current environment:
 1. First, find the rmats package online. Search "conda rmats". This brings up a bioconda page that shows up the correct command to install rmats: `conda install bioconda::rmats` (Notice that it is part of the `bioconda` channel. You will often install packages from here)
-2. On Riviera, ensure you are in the environment you want to install packages in. Check the [Using conda](#using-conda) instructions above. In this case, let's say we are in the "MyEnv" environment: `conda activate MyEnv`
-3. Install the `rmats` package: `conda install bioconda::rmats`
+2. On Riviera, ensure you are in the environment you want to install packages in. Check the [Using conda](#using-conda) instructions above. In this case, let's say we are in the "MyEnv" environment:
+``` bash
+conda activate MyEnv
+```
+3. Install the rmats package:
+``` bash
+conda install bioconda::rmats
+```
 4. You will be prompted to install the necessary packages. Enter `y` to install.
 5. The packages will install in the MyEnv environment!
 
 As a rule of thumb, do not install too many unrelated programs in the same environment. They may conflict and you will have issues installing new packages, and you may find yourself in a dependency situation that [looks like this](https://xkcd.com/1987/).
 
 ### Removing packages from your conda environment
-If you need a list of available packages in the current environment, run `conda list`. Once you have your package name, remove it with `conda remove MyPackage`. You can remove multiple packages by separating the package names with spaces: `conda remove MyPackage MyOtherPackage`. You will be prompted to remove the packages. Enter `y` to remove them.
+If you need a list of available packages in the current environment, run `conda list`. Once you have your package name, remove it with the following command. You will be prompted to remove the packages. Enter `y` to remove them:
+``` bash
+conda remove MyPackage
+```
+You can remove multiple packages by separating the package names with spaces:
+``` bash
+conda remove MyPackage MyOtherPackage
+```
 
 ## Code run on login: .bashrc
 Hidden files and directories are preceded by a dot. The `.bashrc` file is a hidden file in your home directory that contains code to be run on startup. This can be a lot of fun to edit and personalize, (for example, you can have something that displays welcome messages or tells you the weather for the day) but we'll be focusing on setting environment variables and how to enable/disable auto-starting conda.
 
-To edit your .bashrc file, run the following command: `nano ~/.bashrc`
+To edit your .bashrc file, run the following command:
+``` bash
+nano ~/.bashrc
+```
 You will enter a command line-based text editor called nano. When you are finished making edits, type Ctrl+X and then enter `Y` to save your edits, or `N` to not.
 
 <img src="https://i.imgur.com/Y3cDw16.png" width="500"/>
@@ -173,11 +207,14 @@ unset __conda_setup
 To set an environment variable on startup, use the following code:
 - `export myvar=myvalue`, where myvar is your variable, and myvalue is the value you are setting it to.
 
-The most helpful environment variable to set on Riviera is the TMPDIR variable. Many programs will default to using Riviera's `/tmp` directory, which has a disappointing 2 gigabytes of allocated space. You should create your own temp directory. You can name it anything you like, but the following is suggested: `mkdir ~/.temp` (this creates a "hidden" directory in your home folder)
-
-Then, you can add the following code to your .bashrc, replacing `zmikol` with your own Riviera username.
+The most helpful environment variable to set on Riviera is the TMPDIR variable. Many programs will default to using Riviera's `/tmp` directory, which has a disappointing 2 gigabytes of allocated space. You should create your own temp directory. You can name it anything you like, but the following is suggested: (this creates a "hidden" directory in your home folder)
 ``` bash
-export TMPDIR="/nfs/home/zmikol/.temp"
+mkdir ~/.temp
+```
+
+Then, you can **add the following code to your .bashrc**, replacing `username` with your own Riviera username.
+``` bash
+export TMPDIR="/nfs/home/username/.temp"
 ```
 
 If your temp directory has a different name or is elsewhere, `cd` into it, then copy the output of the `pwd` command, and set that as the value of your TMPDIR variable in .bashrc.
@@ -186,6 +223,7 @@ If your temp directory has a different name or is elsewhere, `cd` into it, then 
 Certain tools on Riviera must be loaded as modules, with the most important one being Slurm. To load a module, you can use the `module load module_name` command. (where module_name is the name of your module) Add the following code to your .bashrc:
 ``` bash
 module load slurm
+module load git
 ```
 
 You can check out the other available modules by running `module spider`, and you can search for specific modules, such as CUDA, like so: `module spider cuda`. Use the up/down arrow keys to navigate, and `q` to quit.
