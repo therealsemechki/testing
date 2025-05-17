@@ -120,9 +120,9 @@ conda activate EnvironmentName
 ```
 
 ### Creating the CUT-RUN conda environments
-All the necessary conda environments have already been created as .yml files in the CUT-RUN files. Go to `CUT-RUN-main/CondaEnvs/` and run the following command for each .yml file you need to create an environment from. You will then be prompted to provide permission to install different packages, respond with `y`.
+All the necessary conda environments have already been created as .yml files in the CUT-RUN files. Use `cd` to get to `CUT-RUN-main/CondaEnvs/` and run the following command for each .yml file you need to create an environment from. You will then be prompted to provide permission to install different packages, respond with `y`.
 ``` bash
-conda env create --file YourCondaEnv.yml
+conda env create --file=YourCondaEnv.yml
 ```
 
 ### Removing conda environments
